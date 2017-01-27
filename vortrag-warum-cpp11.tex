@@ -11,7 +11,7 @@
  commentstyle=\color{gray}}
 
 \usepackage[sfdefault,scaled=1,book]{FiraSans}
-\usepackage{FiraMono}
+\usepackage[lining]{FiraMono}
 
 \usecolortheme{rose,seahorse}
 \useinnertheme{rounded,circles}
@@ -63,7 +63,7 @@ for(@auto@ i=a.begin();  i != a.end(); ++i)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\lstinline|std::initializer_list| und die geschweiften Klammern}
+  \frametitle{Geschweifte Klammern und \lstinline|std::initializer_list|}
 \begin{lstlisting}
 vector<int> a{1,2,3}; // oh, wie einfach!
 for(auto i=a.begin();  i != a.end(); ++i)
@@ -90,10 +90,47 @@ vector<int> b{5};
 \pause 
 \begin{block}{}
   \centering
-  \lstinline!{...}! macht das Initialisieren \enquote{natürlich hübsch}! 
+  \lstinline!{...}! macht das Initialisieren \enquote{natürlich hübsch}
 \end{block}
 
-    
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{for-ranged loops und nochmal \lstinline!auto!}
+\begin{lstlisting}
+vector<int> a{1,2,3};
+for(auto i=a.begin();  i != a.end(); ++i)
+  *i *= 2;
+\end{lstlisting}
+
+\pause
+\ldots{}kann man auch so schreiben:
+\begin{lstlisting}
+vector<int> a{1,2,3};
+for(auto& v : a)
+  v *= 2;
+\end{lstlisting}
+
+\pause
+Hm, aber was ist mit:
+\begin{lstlisting}
+@const@ vector<int> a{1,2,3};
+for(auto& v : a)
+  v *= 2;
+\end{lstlisting}
+
+\pause
+\begin{block}{}
+  \centering
+  for-ranged loops machen STL container endlich benutzbar,
+  und \lstinline!auto! ist schlau genug für \lstinline!const!-correctness
+\end{block}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Zero-overhead byte-packing}
 \end{frame}
 
 \end{document}

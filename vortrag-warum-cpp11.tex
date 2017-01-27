@@ -1,0 +1,99 @@
+\pdfminorversion=4
+\documentclass[t,ngerman]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{listings}
+\usepackage{csquotes}
+
+\lstset{language=[11]C++,numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt,
+   basicstyle={\small\ttfamily}, moredelim=**[is][\color{red}]{@}{@},
+ commentstyle=\color{gray}}
+
+\usepackage[sfdefault,scaled=1,book]{FiraSans}
+\usepackage{FiraMono}
+
+\usecolortheme{rose,seahorse}
+\useinnertheme{rounded,circles}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \raisebox{5pt}{\makebox[\paperwidth]{\hfill\makebox[10pt]{\scriptsize\insertframenumber}}}}
+
+\newcommand\Cpp{%
+  C\kern-.03em\raise.15ex\hbox{++}%
+  \spacefactor1000}
+
+\author{Andreas Neiser}
+\title{Warum \Cpp{}11?}
+\date{\today}
+
+\begin{document}
+
+\frame{\maketitle}
+
+
+\begin{frame}[fragile]
+  \frametitle{AAA -- Almost always \lstinline!auto! -- Fast immer \lstinline!auto! }
+  Statt Typ hinzuschreiben, einfach \lstinline!auto! stattdessen. \\ Der Compiler findet's schon raus, hoffentlich\ldots
+  
+\begin{lstlisting}
+typedef vector<int> nums_t; 
+static const int t[] = {1,2,3};
+nums_t a(t,t+sizeof(t)/sizeof(t[0])); 
+for(nums_t::iterator i=a.begin();  i != a.end(); ++i)
+  *i *= 2;
+\end{lstlisting}
+
+Wo weiß der Compiler eigentlich eh schon, \\ was für ein Typ die Variable hat?
+
+\pause 
+\begin{lstlisting}
+static const int t[] = {1,2,3};
+vector<int> a(t,t+sizeof(t)/sizeof(t[0])); 
+for(@auto@ i=a.begin();  i != a.end(); ++i)
+  *i *= 2;
+\end{lstlisting}
+
+\pause 
+\begin{block}{}
+  \centering
+  \lstinline!auto! macht Code schlanker und allgemeiner\\ \small (und man kann über wichtigere Dinge nachdenken als \lstinline|typedef|s) 
+\end{block}
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\lstinline|std::initializer_list| und die geschweiften Klammern}
+\begin{lstlisting}
+vector<int> a{1,2,3}; // oh, wie einfach!
+for(auto i=a.begin();  i != a.end(); ++i)
+  *i *= 2;
+\end{lstlisting}
+
+\pause
+Genauso geht:
+\begin{lstlisting}
+struct my_t { 
+  int A; int B;
+  my_t(int a, int b) : A(a), B(b) {}
+};
+vector<my_t> a{{1,2},{3,4}};  
+\end{lstlisting}
+
+\pause
+Aber {\color{red}Vorsicht} bei:\\
+\begin{lstlisting}
+vector<int> a(5);
+vector<int> b{5};
+\end{lstlisting}
+
+\pause 
+\begin{block}{}
+  \centering
+  \lstinline!{...}! macht das Initialisieren \enquote{natürlich hübsch}! 
+\end{block}
+
+    
+\end{frame}
+
+\end{document}

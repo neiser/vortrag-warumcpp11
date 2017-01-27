@@ -8,7 +8,8 @@
 
 \lstset{language=[11]C++,numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt,
    basicstyle={\small\ttfamily}, moredelim=**[is][\color{red}]{@}{@},
- commentstyle=\color{gray}}
+ commentstyle=\color{gray},
+literate=={=}{a}1}
 
 \usepackage[sfdefault,scaled=1,book]{FiraSans}
 \usepackage[lining]{FiraMono}
@@ -129,8 +130,69 @@ for(auto& v : a)
   
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Zero-overhead byte-packing}
+  \begin{lstlisting}
+auto packed = Make(0,1,1,0,
+                   1,0,0,1,	
+                   1,0,0,1,
+                   0,1,1,0); // should be {0x69, 0x96}
+  \end{lstlisting}
+
+\pause
+Eine Idee:
+\begin{lstlisting}
+template<typename... Bools>
+auto Make(Bools... bools) {
+  const vector<bool> b{(bool)bools...};
+  vector<byte_t> a(b.size()/8);
+  for(auto i=0u; i<a.size(); ++i)
+    a[a.size()-i-1] = (b[8*i+7] << 7) | (b[8*i+6] << 6) 
+                      | /* ... | */  b[8*i+0];
+  return a;
+}
+\end{lstlisting}
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Zero-overhead byte-packing II}
+  
+Erstmal: 
+\begin{lstlisting}
+template<typename... Bools>
+auto Make(Bools... bools) {
+  constexpr auto nBools = sizeof...(bools);
+  static_assert(nBools % 8 == 0, "Bools not packable");
+  auto a = array<byte_t, nBools/8>();
+  Fill(a, nBools/8, bools...);
+  return a;
+}
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Zero-overhead byte-packing III}
+
+Dann:
+\begin{lstlisting}
+template<size_t N, typename... Bools>
+void Fill(array<byte_t, N>& a,
+          size_t i,
+          bool b7, bool b6, bool b5, bool b4,
+          bool b3, bool b2, bool b1, bool b0,
+          Bools... bools) {
+  a[N-i] =  (b7 << 7) /* | ... */ |  b0;
+  Fill(a, i-1, bools...);
+}
+
+template<size_t N>
+void Fill(array<byte_t, N>&, size_t) {}
+\end{lstlisting}
+
+
+    
 \end{frame}
 
 \end{document}

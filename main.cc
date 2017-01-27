@@ -32,7 +32,7 @@ auto Make(Bools... bools) {
 
 template<typename... Bools>
 auto Make_vec(Bools... bools) {
-    const vector<bool> b{(bool)bools...};
+    const vector<bool> b{static_cast<bool>(bools)...};
     vector<byte_t> a(b.size()/8);
     for(auto i=0u; i<a.size(); ++i)
         a[a.size()-i-1] =
@@ -44,9 +44,9 @@ auto Make_vec(Bools... bools) {
 
 int main() {
     const auto bytepacked = Make_vec(0,1,1,0,
-                                     1,0,0,1,
-                                     1,0,0,1,
-                                     0,1,1,0);
+                                 1,0,0,1,
+                                 1,0,0,1,
+                                 0,1,1,0);
 
     for(auto& i : bytepacked)
         cout << setw(2) << setfill('0') << hex << (unsigned)i << " ";

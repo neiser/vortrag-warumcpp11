@@ -26,6 +26,7 @@ literate=={=}{a}1}
 
 \author{Andreas Neiser}
 \title{Warum \Cpp{}11?}
+\subtitle{Nur weil GCC6 jetzt \lstinline|-std=gnu++14| default macht? Och ne\ldots}
 \date{\today}
 \hypersetup{pdftitle={Warum C++11?}}
 \begin{document}
@@ -132,7 +133,7 @@ for(auto& v : a)
 \begin{block}{}
   \centering
   for-ranged loops machen STL container endlich benutzbar,
-  und \lstinline!auto! ist schlau genug für \lstinline!const!-correctness
+  und \lstinline!auto! ist schlau genug für \lstinline!const!-correctness (und mehr)
 \end{block}
   
 \end{frame}
@@ -147,7 +148,7 @@ auto packed = Make(0,1,1,0,
   \end{lstlisting}
 
 \pause
-Eine erste Idee:
+Eine erste Idee, schonmal mit variadic templates:
 \begin{lstlisting}
 template<typename... Bools>
 auto Make(Bools... bools) {
@@ -155,8 +156,9 @@ auto Make(Bools... bools) {
   vector<byte_t> a(b.size()/8);
   for(auto i=0u; i<a.size(); ++i)
     a[a.size()-i-1] = (b[8*i+7] << 7) | (b[8*i+6] << 6) 
-                      (b[8*i+5] << 5) | (b[8*i+4] << 4) 
-                      | /* ... | */  b[8*i+0];
+                    | (b[8*i+5] << 5) | (b[8*i+4] << 4) 
+                    | (b[8*i+3] << 3) | (b[8*i+2] << 2) 
+                    | (b[8*i+1] << 1) |  b[8*i+0];
   return a;
 }
 \end{lstlisting}
@@ -178,12 +180,14 @@ auto Make(Bools... bools) {
 }
 \end{lstlisting}
 
+\lstinline|Fill(...)| wird dem Compiler nun sagen, wie \lstinline|a| zu füllen ist\ldots
+
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Zero-overhead byte-packing III}
 
-Dann:
+\ldots{}und zwar mit rekursiven function calls:
 \begin{lstlisting}
 template<size_t N, typename... Bools>
 void Fill(array<byte_t, N>& a,
@@ -199,10 +203,124 @@ template<size_t N>
 void Fill(array<byte_t, N>&, size_t) {}
 \end{lstlisting}
 
+\pause
 \begin{block}{}
-  \centering Extrem mächtig für Mikrokontrollerentwicklung! 
+  \centering Auf zur Livedemo mit \url{https://godbolt.org/g/57y21s}\\
+  {\small mehr bei Jason Turner's CppCon2016 talk: \url{https://youtu.be/zBkNBP00wJE}}
 \end{block}
     
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Nie wieder schreckliches raw pointer management}
+  Warum will man sowas nicht:
+  \begin{lstlisting}
+auto p = new int;
+DoSomething(p);
+delete p;
+  \end{lstlisting}
+  
+  \pause Besser, aber noch nicht gut:
+  \begin{lstlisting}
+struct owner_t {
+  int* p;
+  owner_t(int* p_) : p(p_) {}
+  ~owner_t() { delete p; }    
+};  
+
+{ // some scope
+  owner_t o(new int);
+  DoSomething(o.p);
+}
+  \end{lstlisting}
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Nie wieder schreckliches raw pointer management II}
+  Was passiert bei Kopien von \lstinline|owner_t|:
+  \begin{lstlisting}
+{ // some scope
+  owner_t o(new int);
+  auto o_copy = o;
+  DoSomething(o.p);
+  // uh uh, double-free *zonk*
+}
+\end{lstlisting}
+\pause
+\begin{block}{}
+  \centering
+  Ownership sollte nicht kopiert werden können!   
+\end{block}
+
+\pause
+Was ist dann aber mit:
+\begin{lstlisting}
+vector<owner_t> ptrs{new int()}; // oh no, again
+\end{lstlisting}
+
+\pause
+\begin{block}{}
+  \centering
+  Man kann STL Container so nicht mehr verwenden!\\
+  {\small Ähm, nein\ldots}   
+\end{block}
+
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Move semantics mit \lstinline|unique_ptr<T>|}
+  Die Rettung ist \lstinline|unique_ptr<int>| statt \lstinline|owner_t|
+\begin{lstlisting}
+{ // some scope
+  auto o = make_unique<int>(); // factory
+  DoSomethingWithRef(*o);
+  DoSomething(move(o));
+  // o invalid here, as DoSomething took ownership
+}
+\end{lstlisting}
+
+\pause
+Aber es ist nicht alles Sonnenschein:
+\begin{lstlisting}
+using p_t = unique_ptr<int>;
+p_t init[] = {make_unique<int>(1),make_unique<int>(2)};
+const vector<p_t> ptrs(make_move_iterator(begin(init)),
+                       make_move_iterator(end(init)));
+for(const auto& p : ptrs)
+  *p *= 2; // constness?! 
+\end{lstlisting} 
+  
+  
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Endlich Ende}
+  
+  Was war:
+  \begin{itemize}
+    \item \lstinline|auto| geht einfach immer
+    \item \lstinline|{...}| als Initialisierungsliste
+    \item Variadic templates mit zero-overhead
+    \item Object ownership management
+  \end{itemize}
+  
+  Was ist:
+  \begin{itemize}
+    \item Scott Meyers, Effective Modern C++, 2014
+    \item Bjarne Stroustrup, The \Cpp{} Programming Language, 2013
+    \item CppCon auf YouTube
+  \end{itemize}
+  
+  Was wird (vielleicht):
+  \begin{itemize}
+    \item Concepts für \lstinline|template|
+    \item Structured bindings für \lstinline|tuple|
+  \end{itemize}
+  
 \end{frame}
 
 \end{document}

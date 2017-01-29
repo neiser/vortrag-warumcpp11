@@ -6,10 +6,13 @@
 \usepackage{listings}
 \usepackage{csquotes}
 
-\lstset{language=[11]C++,numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt,
-   basicstyle={\small\ttfamily}, moredelim=**[is][\color{red}]{@}{@},
+\lstset{language=[11]C++, numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt,
+   basicstyle={\firalining}, moredelim=**[is][\color{red}]{@}{@},
  commentstyle=\color{gray}, frame=single, framerule={0.8pt},
 literate=={=}{a}1}
+\lstnewenvironment{cpplisting}{\lstset{basicstyle={\firalining\small}}}{}
+
+%\usepackage[default]{comicneue}
 
 \usepackage[sfdefault,scaled=1,book]{FiraSans}
 \usepackage[lining]{FiraMono}
@@ -26,7 +29,7 @@ literate=={=}{a}1}
 
 \author{Andreas Neiser}
 \title{Warum \Cpp{}11?}
-\subtitle{Nur weil GCC6 jetzt \lstinline|-std=gnu++14| default macht? Och ne\ldots}
+\subtitle{Nur weil GCC6 jetzt \lstinline|-std=gnu++14| default macht?!}
 \date{\today}
 \hypersetup{pdftitle={Warum C++11?}}
 \begin{document}
@@ -45,23 +48,23 @@ literate=={=}{a}1}
   \frametitle{AAA -- Almost always \lstinline!auto! -- Fast immer \lstinline!auto! }
   Statt Typ hinzuschreiben, einfach \lstinline!auto!. \\ Der Compiler findet's schon raus, hoffentlich\ldots
   
-\begin{lstlisting}
+\begin{cpplisting}
 typedef vector<int> nums_t; 
 static const int t[] = {1,2,3};
 nums_t a(t,t+sizeof(t)/sizeof(t[0])); 
 for(nums_t::iterator i=a.begin();  i!=a.end(); ++i)
   *i *= 2;
-\end{lstlisting}
+\end{cpplisting}
 
 Wo weiß der Compiler eigentlich eh schon, \\ was für ein Typ die Variable hat?
 
 \pause 
-\begin{lstlisting}
+\begin{cpplisting}
 static const int t[] = {1,2,3};
 vector<int> a(t,t+sizeof(t)/sizeof(t[0])); 
 for(@auto@ i=a.begin();  i != a.end(); ++i)
   *i *= 2;
-\end{lstlisting}
+\end{cpplisting}
 
 \pause 
 \begin{block}{}
@@ -72,29 +75,29 @@ for(@auto@ i=a.begin();  i != a.end(); ++i)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Geschweifte Klammern und \lstinline|std::initializer_list|}
-\begin{lstlisting}
+  \frametitle{Geschweifte Klammern und \lstinline[columns=fullflexible]|initializer_list|}
+\begin{cpplisting}
 vector<int> a{1,2,3}; // oh, wie einfach!
 for(auto i=a.begin();  i != a.end(); ++i)
   *i *= 2;
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 Genauso geht:
-\begin{lstlisting}
+\begin{cpplisting}
 struct my_t { 
   int A; int B;
   my_t(int a, int b) : A(a), B(b) {}
 };
 vector<my_t> a{{1,2},{3,4}};  
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 Aber {\color{red}Vorsicht} bei:\\
-\begin{lstlisting}
+\begin{cpplisting}
 vector<int> a(5);
 vector<int> b{5};
-\end{lstlisting}
+\end{cpplisting}
 
 \pause 
 \begin{block}{}
@@ -107,27 +110,27 @@ vector<int> b{5};
 
 \begin{frame}[fragile]
   \frametitle{for-ranged loops und nochmal \lstinline!auto!}
-\begin{lstlisting}
+\begin{cpplisting}
 vector<int> a{1,2,3};
 for(auto i=a.begin();  i != a.end(); ++i)
   *i *= 2;
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 \ldots{}kann man auch so schreiben:
-\begin{lstlisting}
+\begin{cpplisting}
 vector<int> a{1,2,3};
 for(auto& v : a)
   v *= 2;
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 Hm, aber was ist mit:
-\begin{lstlisting}
+\begin{cpplisting}
 @const@ vector<int> a{1,2,3};
 for(auto& v : a)
   v *= 2;
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 \begin{block}{}
@@ -140,16 +143,16 @@ for(auto& v : a)
 
 \begin{frame}[fragile]
   \frametitle{Zero-overhead byte-packing}
-  \begin{lstlisting}
+  \begin{cpplisting}
 auto packed = Make(0,@1@,@1@,0,
                    @1@,0,0,@1@,	
                    @1@,0,0,@1@,
                    0,@1@,@1@,0); // = {0x69, 0x96}
-  \end{lstlisting}
+  \end{cpplisting}
 
 \pause
 Eine erste Idee, schonmal mit variadic templates:
-\begin{lstlisting}
+\begin{cpplisting}
 using byte_t = unsigned char;
 template<typename... Bools>
 auto Make(Bools... bools) {
@@ -162,7 +165,7 @@ auto Make(Bools... bools) {
                     | (b[8*i+1]<<1) |  b[8*i+0];
   return a;
 }
-\end{lstlisting}
+\end{cpplisting}
   
 \end{frame}
 
@@ -170,7 +173,7 @@ auto Make(Bools... bools) {
   \frametitle{Zero-overhead byte-packing II}
   
 Erstmal: 
-\begin{lstlisting}
+\begin{cpplisting}
 template<typename... Bools>
 auto Make(Bools... bools) {
   constexpr auto nBools = sizeof...(bools);
@@ -179,7 +182,7 @@ auto Make(Bools... bools) {
   Fill(a, nBools/8, bools...);
   return a;
 }
-\end{lstlisting}
+\end{cpplisting}
 
 \lstinline|Fill(...)| wird dem Compiler nun sagen, wie \lstinline|a| zu füllen ist\ldots
 
@@ -189,7 +192,7 @@ auto Make(Bools... bools) {
   \frametitle{Zero-overhead byte-packing III}
 
 \ldots{}und zwar mit rekursiven function calls:
-\begin{lstlisting}
+\begin{cpplisting}
 template<size_t N, typename... Bools>
 void Fill(array<byte_t, N>& a,
           size_t i,
@@ -202,7 +205,7 @@ void Fill(array<byte_t, N>& a,
 
 template<size_t N>
 void Fill(array<byte_t, N>&, size_t) {}
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 \begin{block}{}
@@ -216,14 +219,14 @@ void Fill(array<byte_t, N>&, size_t) {}
 \begin{frame}[fragile]
   \frametitle{Nie wieder schreckliches raw pointer management}
   Warum will man sowas nicht:
-  \begin{lstlisting}
+  \begin{cpplisting}
 auto p = new int;
 DoSomething(p);
 delete p;
-  \end{lstlisting}
+  \end{cpplisting}
   
   \pause Besser, aber noch nicht gut:
-  \begin{lstlisting}
+  \begin{cpplisting}
 struct owner_t {
   int* p;
   owner_t(int* p_) : p(p_) {}
@@ -234,21 +237,21 @@ struct owner_t {
   owner_t o(new int);
   DoSomething(o.p);
 }
-  \end{lstlisting}
+  \end{cpplisting}
   
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Nie wieder schreckliches raw pointer management II}
   Was passiert bei Kopien von \lstinline|owner_t|:
-  \begin{lstlisting}
+  \begin{cpplisting}
 { // some scope
   owner_t o(new int);
   auto o_copy = o;
   DoSomething(o.p);
   // uh uh, double-free *zonk*
 }
-\end{lstlisting}
+\end{cpplisting}
 \pause
 \begin{block}{}
   \centering
@@ -257,9 +260,9 @@ struct owner_t {
 
 \pause
 Was ist dann aber mit:
-\begin{lstlisting}
+\begin{cpplisting}
 vector<owner_t> ptrs{new int()}; // oh no, again
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 \begin{block}{}
@@ -274,18 +277,18 @@ vector<owner_t> ptrs{new int()}; // oh no, again
 \begin{frame}[fragile]
   \frametitle{Move semantics mit \lstinline|unique_ptr<T>|}
   Die Rettung ist \lstinline|unique_ptr<int>| statt \lstinline|owner_t|
-\begin{lstlisting}
+\begin{cpplisting}
 { // some scope
   auto o = make_unique<int>(); // factory
   DoSomethingWithRef(*o);
   DoSomething(move(o));
   // o invalid here, as DoSomething took ownership
 }
-\end{lstlisting}
+\end{cpplisting}
 
 \pause
 Aber es ist nicht alles Sonnenschein:
-\begin{lstlisting}
+\begin{cpplisting}
 using p_t = unique_ptr<int>;
 p_t in[] = {make_unique<int>(1),
             make_unique<int>(2)};
@@ -293,7 +296,7 @@ const list<p_t> ptrs(make_move_iterator(begin(in)),
                      make_move_iterator(end(in)));
 for(const auto& p : ptrs)
   *p *= 2; // constness?! 
-\end{lstlisting} 
+\end{cpplisting} 
   
   
 \end{frame}

@@ -8,7 +8,7 @@
 
 \lstset{language=[11]C++,numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt,
    basicstyle={\small\ttfamily}, moredelim=**[is][\color{red}]{@}{@},
- commentstyle=\color{gray},
+ commentstyle=\color{gray}, frame=single, framerule={0.8pt},
 literate=={=}{a}1}
 
 \usepackage[sfdefault,scaled=1,book]{FiraSans}
@@ -43,13 +43,13 @@ literate=={=}{a}1}
 
 \begin{frame}[fragile]
   \frametitle{AAA -- Almost always \lstinline!auto! -- Fast immer \lstinline!auto! }
-  Statt Typ hinzuschreiben, einfach \lstinline!auto! stattdessen. \\ Der Compiler findet's schon raus, hoffentlich\ldots
+  Statt Typ hinzuschreiben, einfach \lstinline!auto!. \\ Der Compiler findet's schon raus, hoffentlich\ldots
   
 \begin{lstlisting}
 typedef vector<int> nums_t; 
 static const int t[] = {1,2,3};
 nums_t a(t,t+sizeof(t)/sizeof(t[0])); 
-for(nums_t::iterator i=a.begin();  i != a.end(); ++i)
+for(nums_t::iterator i=a.begin();  i!=a.end(); ++i)
   *i *= 2;
 \end{lstlisting}
 
@@ -141,24 +141,25 @@ for(auto& v : a)
 \begin{frame}[fragile]
   \frametitle{Zero-overhead byte-packing}
   \begin{lstlisting}
-auto packed = Make(0,1,1,0,
-                   1,0,0,1,	
-                   1,0,0,1,
-                   0,1,1,0); // should be {0x69, 0x96}
+auto packed = Make(0,@1@,@1@,0,
+                   @1@,0,0,@1@,	
+                   @1@,0,0,@1@,
+                   0,@1@,@1@,0); // = {0x69, 0x96}
   \end{lstlisting}
 
 \pause
 Eine erste Idee, schonmal mit variadic templates:
 \begin{lstlisting}
+using byte_t = unsigned char;
 template<typename... Bools>
 auto Make(Bools... bools) {
   const vector<bool> b{static_cast<bool>(bools)...};
   vector<byte_t> a(b.size()/8);
   for(auto i=0u; i<a.size(); ++i)
-    a[a.size()-i-1] = (b[8*i+7] << 7) | (b[8*i+6] << 6) 
-                    | (b[8*i+5] << 5) | (b[8*i+4] << 4) 
-                    | (b[8*i+3] << 3) | (b[8*i+2] << 2) 
-                    | (b[8*i+1] << 1) |  b[8*i+0];
+    a[a.size()-i-1] = (b[8*i+7]<<7) | (b[8*i+6]<<6) 
+                    | (b[8*i+5]<<5) | (b[8*i+4]<<4) 
+                    | (b[8*i+3]<<3) | (b[8*i+2]<<2) 
+                    | (b[8*i+1]<<1) |  b[8*i+0];
   return a;
 }
 \end{lstlisting}
@@ -173,7 +174,7 @@ Erstmal:
 template<typename... Bools>
 auto Make(Bools... bools) {
   constexpr auto nBools = sizeof...(bools);
-  static_assert(nBools % 8 == 0, "Bools not packable");
+  static_assert(nBools % 8 == 0, "nBools wrong");
   auto a = array<byte_t, nBools/8>();
   Fill(a, nBools/8, bools...);
   return a;
@@ -195,7 +196,7 @@ void Fill(array<byte_t, N>& a,
           bool b7, bool b6, bool b5, bool b4,
           bool b3, bool b2, bool b1, bool b0,
           Bools... bools) {
-  a[N-i] =   (b7 << 7) | (b6 << 6) /* | ... */ |  b0;
+  a[N-i] = (b7<<7) | (b6<<6) /* | ... */ | b0;
   Fill(a, i-1, bools...);
 }
 
@@ -286,9 +287,10 @@ vector<owner_t> ptrs{new int()}; // oh no, again
 Aber es ist nicht alles Sonnenschein:
 \begin{lstlisting}
 using p_t = unique_ptr<int>;
-p_t init[] = {make_unique<int>(1),make_unique<int>(2)};
-const vector<p_t> ptrs(make_move_iterator(begin(init)),
-                       make_move_iterator(end(init)));
+p_t in[] = {make_unique<int>(1),
+            make_unique<int>(2)};
+const list<p_t> ptrs(make_move_iterator(begin(in)),
+                     make_move_iterator(end(in)));
 for(const auto& p : ptrs)
   *p *= 2; // constness?! 
 \end{lstlisting} 

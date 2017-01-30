@@ -7,10 +7,10 @@
 \usepackage{csquotes}
 
 \lstset{language=[11]C++, numbers=left, numberstyle=\tiny, stepnumber=1, numbersep=5pt,
-   basicstyle={\firalining}, moredelim=**[is][\color{red}]{@}{@},
- commentstyle=\color{gray}, frame=single, framerule={0.8pt},
+   basicstyle={\firalining\ttfamily}, moredelim=**[is][\color{red}]{@}{@},
+ commentstyle=\color{gray}, frame=single, framerule={0.8pt}, columns=fullflexible,
 literate=={=}{a}1}
-\lstnewenvironment{cpplisting}{\lstset{basicstyle={\firalining\small}}}{}
+\lstnewenvironment{cpplisting}{\lstset{basicstyle={\firalining\small},columns=fixed}}{}
 
 %\usepackage[default]{comicneue}
 
@@ -75,7 +75,7 @@ for(@auto@ i=a.begin();  i != a.end(); ++i)
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Geschweifte Klammern und \lstinline[columns=fullflexible]|initializer_list|}
+  \frametitle{Geschweifte Klammern und \lstinline|initializer_list|}
 \begin{cpplisting}
 vector<int> a{1,2,3}; // oh, wie einfach!
 for(auto i=a.begin();  i != a.end(); ++i)
@@ -184,7 +184,7 @@ auto Make(Bools... bools) {
 }
 \end{cpplisting}
 
-\lstinline|Fill(...)| wird dem Compiler nun sagen, wie \lstinline|a| zu füllen ist\ldots
+\lstinline|Fill(...)| wird dem Compiler nun sagen, \\ wie \lstinline|a| zu füllen ist\ldots
 
 \end{frame}
 

@@ -59,6 +59,7 @@ for(nums_t::iterator i=a.begin();  i!=a.end(); ++i)
 Wo weiß der Compiler eigentlich eh schon, \\ was für ein Typ die Variable hat?
 
 \pause 
+\lstset{firstnumber=6}
 \begin{cpplisting}
 static const int t[] = {1,2,3};
 vector<int> a(t,t+sizeof(t)/sizeof(t[0])); 
@@ -84,6 +85,7 @@ for(auto i=a.begin();  i != a.end(); ++i)
 
 \pause
 Genauso geht:
+\lstset{firstnumber=4}
 \begin{cpplisting}
 struct my_t { 
   int A; int B;
@@ -94,6 +96,7 @@ vector<my_t> a{{1,2},{3,4}};
 
 \pause
 Aber {\color{red}Vorsicht} bei:\\
+\lstset{firstnumber=9}
 \begin{cpplisting}
 vector<int> a(5);
 vector<int> b{5};
@@ -118,6 +121,7 @@ for(auto i=a.begin();  i != a.end(); ++i)
 
 \pause
 \ldots{}kann man auch so schreiben:
+\lstset{firstnumber=4}
 \begin{cpplisting}
 vector<int> a{1,2,3};
 for(auto& v : a)
@@ -126,6 +130,7 @@ for(auto& v : a)
 
 \pause
 Hm, aber was ist mit:
+\lstset{firstnumber=7}
 \begin{cpplisting}
 @const@ vector<int> a{1,2,3};
 for(auto& v : a)
@@ -152,6 +157,7 @@ auto packed = Make(0,@1@,@1@,0,
 
 \pause
 Eine erste Idee, schonmal mit variadic templates:
+\lstset{firstnumber=5}
 \begin{cpplisting}
 using byte_t = unsigned char;
 template<typename... Bools>
@@ -226,6 +232,7 @@ delete p;
   \end{cpplisting}
   
   \pause Besser, aber noch nicht gut:
+  \lstset{firstnumber=4}
   \begin{cpplisting}
 struct owner_t {
   int* p;
@@ -260,6 +267,7 @@ struct owner_t {
 
 \pause
 Was ist dann aber mit:
+\lstset{firstnumber=7}
 \begin{cpplisting}
 vector<owner_t> ptrs{new int()}; // oh no, again
 \end{cpplisting}
@@ -288,6 +296,7 @@ vector<owner_t> ptrs{new int()}; // oh no, again
 
 \pause
 Aber es ist nicht alles Sonnenschein:
+\lstset{firstnumber=7}
 \begin{cpplisting}
 using p_t = unique_ptr<int>;
 p_t in[] = {make_unique<int>(1),

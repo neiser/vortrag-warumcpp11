@@ -329,7 +329,7 @@ for(const auto& p : ptrs)
     \item CppCon auf YouTube
   \end{itemize}
   
-  Was wird (vielleicht):
+  Was wird (vielleicht ganz bestimmt):
   \begin{itemize}
     \item Concepts für \lstinline|template|
     \item Structured bindings für \lstinline|tuple|
@@ -352,11 +352,11 @@ struct is_prime<p,1>{constexpr static bool v = 1;};
 template<int p>
 struct is_prime<p,0>{constexpr static bool v = 1;};
     
-template<int max>
+template<int p>
 void prime_print() {
-  cout << max << " "
-       << (max==1 ? 0 : is_prime<max>::v) << endl;
-  prime_print<max-1>();
+  cout << p << " "
+       << (p==1 ? 0 : is_prime<p>::v) << endl;
+  prime_print<p-1>();
 };
     
 template<> void prime_print<0>() {};

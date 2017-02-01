@@ -337,4 +337,31 @@ for(const auto& p : ptrs)
   
 \end{frame}
 
+\begin{frame}[fragile]
+  
+  \begin{cpplisting}
+template<int p, int i = p - 1>
+struct is_prime {
+ constexpr static bool v = p % i && 
+                           is_prime<p,i-1>::v;
+};
+    
+template<int p>
+struct is_prime<p,1>{constexpr static bool v = 1;};
+
+template<int p>
+struct is_prime<p,0>{constexpr static bool v = 1;};
+    
+template<int max>
+void prime_print() {
+  cout << max << " "
+       << (max==1 ? 0 : is_prime<max>::v) << endl;
+  prime_print<max-1>();
+};
+    
+template<> void prime_print<0>() {};
+  \end{cpplisting}
+  
+\end{frame}
+
 \end{document}

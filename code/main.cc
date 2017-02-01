@@ -59,6 +59,43 @@ auto Make(Bools... bools) {
 
 #endif
 
+template<int p, int i = p - 1>
+struct is_prime {
+    constexpr static bool v = p % i
+            && is_prime<p,i-1>::v;
+};
+
+template<int p>
+struct is_prime<p, 1> {
+    constexpr static bool v = 1;
+};
+
+template<int p>
+struct is_prime<p, 0> {
+    constexpr static bool v = 1;
+};
+
+//template<int p, int i=p-1>
+//constexpr bool is_prime() {
+//    return i<2 ? true :
+//                 p % i && is_prime<p,i-1>();
+//}
+
+//template<int p>
+//constexpr bool is_prime<p, 0>() {}
+
+template<int max>
+constexpr void prime_print() {
+    cout << max << " "
+         << (max==1 ? 0 : is_prime<max>::v)
+         << endl;
+    prime_print<max-1>();
+};
+
+template<>
+void prime_print<0>() {};
+
+
 int main() {
     auto bytepacked = Make(0,1,1,0,
                            1,0,0,1,
@@ -66,9 +103,9 @@ int main() {
                            0,1,1,0);
     for(const auto& i : bytepacked)
         cout << setw(2) << setfill('0') << hex << (unsigned)i << " ";
-    cout << endl;
+    cout << dec << endl;
 
-
+    prime_print<100>();
 
 //    using p_t = unique_ptr<int>;
 //    p_t init[] = {make_unique<int>(1),make_unique<int>(2)};
